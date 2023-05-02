@@ -6,11 +6,12 @@ export enum Pages {
   RELEASES = "/releases",
   FEATURED_PLAYLIST = "/featured-playlists",
   CATEGORIES = "/categories",
-  PLAYLIST="/playlists",
-  ARTIST="/artist", 
-  ALBUM="/album",
-  SEARCH="/search",
-  TRACKS="/tracks",
+  PLAYLIST = "/playlists",
+  ARTIST = "/artists",
+  ALBUM = "/albums",
+  SEARCH = "/search",
+  TRACKS = "/tracks",
+  LIBRARY = "/library",
 }
 
 export enum Assets {
