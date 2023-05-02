@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 
+import NowPlaying from "../nowPlaying";
 import Sidebar from "../Sidebar";
 
 export default function MainLayout({
@@ -19,7 +20,9 @@ export default function MainLayout({
         <Sidebar />
         {children}
       </div>
-      <div>{/*Player*/}</div>
+      <div className="fixed max-[450px]:bottom-[65px] bottom-0 w-full bg-[#121212] border-t border-gray-900 text-white">
+        <NowPlaying />
+      </div>
     </div>
   );
 }
