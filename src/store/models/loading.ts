@@ -7,6 +7,6 @@ export const loading = createModel<RootModel>()({
   reducers: {
     setLoading: (state: boolean, payload: boolean) => {
       return payload;
-    }
-  }
+    },
+  },
 });
