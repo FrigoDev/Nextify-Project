@@ -3,7 +3,7 @@ import { BuiltInProviderType } from "next-auth/providers";
 import { ClientSafeProvider, LiteralUnion, signIn } from "next-auth/react";
 import { expect, it, vi, describe } from "vitest";
 
-import Login from ".";
+import Login from "../pages/login";
 
 vi.mock("next-auth/react", () => {
   const signIn = vi.fn();
