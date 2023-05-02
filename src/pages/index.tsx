@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { getToken } from "next-auth/jwt";
 import { AiOutlineSetting } from "react-icons/ai";
+import { FaPlay } from "react-icons/fa";
+import { useDispatch } from "react-redux";
 
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
@@ -10,6 +12,7 @@ import Header from "@/components/Header";
 import SectionDivider from "@/components/SectionDivider";
 import { Pages, Assets } from "@/constants/index";
 import spotifyApi from "@/lib/spotifyWebApi";
+import { Dispatch } from "@/store/store";
 import welcomeMessage from "@/utils/welcomeMessage";
 
 interface indexProps {
@@ -25,8 +28,9 @@ const Index = ({
   featuredPlaylists,
   categories,
 }: indexProps) => {
+  const dispatch = useDispatch<Dispatch>();
   return (
-    <div className="flex-grow items-center h-screen overflow-y-scroll scrollbar-hide pb-4">
+    <div className="items-center h-screen overflow-y-scroll scrollbar-hide pb-24 max-[450px]:pb-16">
       <Header>
         <div className="flex flex-col mt-10 max-[550px]:mt-4">
           <div className="flex flex-row justify-between mb-4 space-x-4">
@@ -35,22 +39,36 @@ const Index = ({
             </h1>
             <AiOutlineSetting className="my-auto text-4xl max-[470px]:text-3xl hidden max-[550px]:block cursor-pointer hover:" />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 sm:grid-cols-2 grid-flow-row md:gap-4 gap-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 min-[720px]:grid-cols-2 grid-flow-row md:gap-4 gap-2">
             {topTracks.items.map((track) => (
-              <Link href={`/tracks/${track.id}`} key={track.id}>
-                <div className="flex flex-row m-2 cursor-pointer transition duration-500 ease-in-out bg-white bg-opacity-10 hover:bg-opacity-25 rounded-lg">
-                  <Image
-                    src={track?.album?.images[0]?.url ?? Assets.DEFAULT_IMAGE}
-                    width={80}
-                    height={80}
-                    alt={track.name}
-                    className="rounded-lg drop-shadow-xl"
-                  />
-                  <p className="text-md my-auto ml-4 break-words line-clamp-2">
-                    {track.name}
-                  </p>
+              <>
+                <div className="flex flex-row my-2 ml-2 pr-2 cursor-pointer transition duration-500 ease-in-out bg-white bg-opacity-10 hover:bg-opacity-25 rounded-lg">
+                  <Link
+                    className="flex flex-row w-full"
+                    href={`${Pages.TRACKS}/${track.id}`}
+                    key={track.id}
+                  >
+                    <Image
+                      src={track?.album?.images[0]?.url ?? Assets.DEFAULT_IMAGE}
+                      width={80}
+                      height={80}
+                      alt={track.name}
+                      className="rounded-lg drop-shadow-xl"
+                    />
+                    <p className="text-md my-auto ml-4 break-words line-clamp-2">
+                      {track.name}
+                    </p>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      dispatch.playingSong.playTrack(track);
+                    }}
+                    className="flex justify-end my-auto mr-2 text-black bg-green-500 rounded-full min-w-[32px] h-8 duration-300 hover:scale-110 hover:bg-green-400"
+                  >
+                    <FaPlay className="text-center m-auto pl-1" />
+                  </button>
                 </div>
-              </Link>
+              </>
             ))}
           </div>
         </div>
@@ -62,7 +80,7 @@ const Index = ({
             image={release?.images[0]?.url ?? Assets.DEFAULT_IMAGE}
             title={release.name}
             description={release.artists[0].name}
-            link={`/album/${release.id}`}
+            link={`${Pages.ALBUM}/${release.id}`}
           />
         ))}
       </SectionDivider>
@@ -73,7 +91,7 @@ const Index = ({
             image={playlist?.images[0]?.url ?? Assets.DEFAULT_IMAGE}
             title={playlist.name}
             description={playlist?.description ?? ""}
-            link={`/playlist/${playlist.id}`}
+            link={`${Pages.PLAYLIST}/${playlist.id}`}
           />
         ))}
       </SectionDivider>
@@ -84,7 +102,7 @@ const Index = ({
             image={category?.icons[0]?.url ?? Assets.DEFAULT_IMAGE}
             title={category.name}
             description={""}
-            link={`/category/${category.id}`}
+            link={`${Pages.CATEGORIES}/${category.id}`}
           />
         ))}
       </SectionDivider>
