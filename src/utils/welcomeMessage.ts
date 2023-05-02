@@ -1,4 +1,8 @@
-type Greeting = "Good morning" | "Good afternoon" | "Good evening" | "Good night";
+type Greeting =
+  | "Good morning"
+  | "Good afternoon"
+  | "Good evening"
+  | "Good night";
 
 function getGreeting(): Greeting {
   const hour = new Date().getHours();
