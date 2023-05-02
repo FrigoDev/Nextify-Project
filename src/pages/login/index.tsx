@@ -1,9 +1,17 @@
 import Image from "next/image";
-import { InferGetServerSidePropsType } from "next/types";
-import { ClientSafeProvider, getProviders, signIn } from "next-auth/react";
+import { BuiltInProviderType } from "next-auth/providers";
+import {
+  ClientSafeProvider,
+  LiteralUnion,
+  getProviders,
+  signIn,
+} from "next-auth/react";
 
 type LoginProps = {
-  providers: InferGetServerSidePropsType<typeof getServerSideProps>;
+  providers: Record<
+    LiteralUnion<BuiltInProviderType, string>,
+    ClientSafeProvider
+  >;
 };
 
 const Login = ({ providers }: LoginProps) => {
@@ -14,7 +22,7 @@ const Login = ({ providers }: LoginProps) => {
           priority
           width={200}
           height={200}
-          src="/assets/spotifyLogo.png"
+          src="/assets/images/spotifyLogo.png"
           alt="Spotify logo"
         />
       </div>
