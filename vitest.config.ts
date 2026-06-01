@@ -5,12 +5,17 @@ import { defineConfig } from "vitest/config";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  resolve:{
-    alias:{
-      "@":path.resolve(__dirname,"src")
-    }
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+    },
   },
   test: {
     environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/tests/setup.ts"],
+    coverage: {
+      provider: "v8",
+    },
   },
 });

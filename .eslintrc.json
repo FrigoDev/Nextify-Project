@@ -22,7 +22,7 @@
     "quotes": ["error", "double"],
     "semi": ["error", "always"],
     "react/react-in-jsx-scope": "off",
-    "no-console": ["warn"],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
     "space-infix-ops": "error",
     "arrow-spacing": ["error", { "before": true, "after": true }],
     "semi-spacing": ["error", { "after": true }],
