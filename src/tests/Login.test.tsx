@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { BuiltInProviderType } from "next-auth/providers";
+import { BuiltInProviderType } from "next-auth/providers/index";
 import { ClientSafeProvider, LiteralUnion, signIn } from "next-auth/react";
 import { expect, it, vi, describe } from "vitest";
 

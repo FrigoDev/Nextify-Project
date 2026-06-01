@@ -44,8 +44,7 @@ it("test_user_selects_option_and_on_select_function_is_called", () => {
       onClose={onClose}
     />
   );
-  fireEvent.click(screen.getAllByText("Option 1")[1]);
-  vi.spyOn(onSelect, "call");
+  fireEvent.click(screen.getByText("Option 1"));
   expect(onSelect).toBeCalledWith({ value: "option1", label: "Option 1" });
 });
 
@@ -67,6 +66,5 @@ it("test_dropdown_closes_on_outside_click", () => {
     />
   );
   fireEvent.click(document);
-  vi.spyOn(onClose, "call");
   expect(onClose).toBeCalled();
 });
