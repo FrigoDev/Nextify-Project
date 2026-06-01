@@ -10,32 +10,37 @@ export type SearchType =
   | "track"
   | "show"
   | "episode";
+// Spotify deprecated Featured Playlists (Nov 2024), so the default "Browse all"
+// view is built from the user's own top artists instead.
 export const getEmtpySearch = async (token: JWT) => {
   spotifyApi.setAccessToken(token?.accessToken ?? "");
   return (
-    await spotifyApi.getFeaturedPlaylists({ limit: 30, country: "CO" })
-  ).body.playlists.items.map((playlist) => {
+    await spotifyApi.getMyTopArtists({ limit: 10 })
+  ).body.items.map((artist) => {
     return {
-      id: playlist.id,
-      name: playlist.name,
-      images: playlist?.images[0]?.url,
-      owner: playlist.owner.display_name,
-      link: Pages.PLAYLIST + "/" + playlist.id,
+      id: artist.id,
+      name: artist.name,
+      images: artist?.images[0]?.url,
+      owner: artist.genres?.slice(0, 2).join(", "),
+      link: Pages.ARTIST + "/" + artist.id,
     };
   });
 };
+
+// The search endpoint's max `limit` was reduced to 10 in February 2026.
+export const SEARCH_LIMIT = 10;
 
 export const spotifySearch = async (
   token: JWT,
   search: string,
   type: string[],
   offset = 0,
-  limit = 12
+  limit = SEARCH_LIMIT
 ) => {
   spotifyApi.setAccessToken(token?.accessToken ?? "");
   const result = (
     await spotifyApi.search(search, type as SearchType[], {
-      limit,
+      limit: Math.min(limit, SEARCH_LIMIT),
       offset,
       market: "CO",
     })
