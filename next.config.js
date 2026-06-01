@@ -2,18 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      "dailymix-images.scdn.co",
-      "daily-mix.scdn.co",
-      "lineup-images.scdn.co",
-      "thisis-images.scdn.co",
-      "via.placeholder.com",
-      "mosaic.scdn.co",
-      "i.scdn.co",
-      "t.scdn.co",
-      "platform-lookaside.fbsbx.com",
-      "charts-images.scdn.co",
-      "platform-lookaside.fbsbx.com",
+    remotePatterns: [
+      { protocol: "https", hostname: "**.scdn.co" },
+      { protocol: "https", hostname: "**.spotifycdn.com" },
+      { protocol: "https", hostname: "via.placeholder.com" },
+      { protocol: "https", hostname: "platform-lookaside.fbsbx.com" },
     ],
   },
 };
