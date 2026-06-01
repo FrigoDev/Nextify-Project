@@ -1,124 +1,98 @@
 import { createModel } from "@rematch/core";
 
+import { startPlayback } from "@/lib/spotifyPlayer";
+
 import type { RootModel } from ".";
 
+// Playback now uses the Spotify Web Playback SDK (full tracks, Premium only).
+// This model holds only the serializable playback state; the Spotify.Player
+// instance itself lives in the NowPlaying component (it is not serializable).
 export interface NowPlayingState {
+  deviceId: string;
+  isActive: boolean;
+  id: string;
   name: string;
   artist: string;
+  artistId: string;
   album: string;
   image: string;
   duration: number;
-  progress: number;
+  position: number;
   isPlaying: boolean;
   volume: number;
-  repeat: boolean;
-  url: string;
+}
+
+const initialState: NowPlayingState = {
+  deviceId: "",
+  isActive: false,
+  id: "",
+  name: "no track selected",
+  artist: "",
+  artistId: "",
+  album: "",
+  image: "",
+  duration: 0,
+  position: 0,
+  isPlaying: false,
+  volume: 0.5,
+};
+
+export interface PlaybackSnapshot {
   id: string;
-  seek: number;
+  name: string;
+  artist: string;
   artistId: string;
-  updateProgress: boolean,
+  album: string;
+  image: string;
+  duration: number;
+  position: number;
+  isPlaying: boolean;
 }
 
 export const playingSong = createModel<RootModel>()({
-  state: {
-    name: "no track selected",
-    artist: "",
-    artistId: "",
-    album: "",
-    image: "",
-    duration: 0,
-    progress: 0,
-    isPlaying: false,
-    volume: 100,
-    repeat: false,
-    url: "",
-    id: "",
-    mute: false,
-    seek: -1,
-    updateProgress: true,
-  } as NowPlayingState,
-
+  state: initialState,
   reducers: {
-    setTrack: (state: NowPlayingState, payload: SpotifyApi.TrackObjectFull) => {
-      return {
-        name: payload.name,
-        artist: payload.artists[0].name,
-        artistId: payload.artists[0].id,
-        album: payload.album.name,
-        image: payload.album.images[0].url,
-        duration: payload.duration_ms,
-        progress: 0,
-        isPlaying: false,
-        volume: 0.05,
-        repeat: false,
-        url: payload.preview_url,
-        id: payload.id,
-        seek: -1,
-        updateProgress: true,
-      } as NowPlayingState;
-    },
-    setProgress: (state: NowPlayingState, payload: number) => {
-      return {
-        ...state,
-        progress: payload,
-      };
-    },
-    setUpdateProgress: (state: NowPlayingState, payload: boolean) => {
-      return {
-        ...state,
-        updateProgress: payload,
-      };
-    },
-
-    setProgressControled: (state: NowPlayingState, payload: number) => {
-      if (state.updateProgress) {
-        return {
-          ...state,
-          progress: payload,
-        };
-      }
-
-      return state;
-    },
-
-    setIsPlaying: (state: NowPlayingState, payload: boolean) => {
-      return {
-        ...state,
-        isPlaying: payload,
-      };
-    },
-    setVolume: (state: NowPlayingState, payload: number) => {
-      return {
-        ...state,
-        volume: payload,
-      };
-    },
-    setRepeat: (state: NowPlayingState, payload: boolean) => {
-      return {
-        ...state,
-        repeat: payload,
-      };
-    },
-    setMute: (state: NowPlayingState, payload: boolean) => {
-      return {
-        ...state,
-        mute: payload,
-      };
-    },
-    setSeek: (state: NowPlayingState, payload: number) => {
-      return {
-        ...state,
-        seek: payload,
-      };
-    },
+    setDeviceId: (state, payload: string) => ({ ...state, deviceId: payload }),
+    setActive: (state, payload: boolean) => ({ ...state, isActive: payload }),
+    setIsPlaying: (state, payload: boolean) => ({
+      ...state,
+      isPlaying: payload,
+    }),
+    setPosition: (state, payload: number) => ({ ...state, position: payload }),
+    setVolume: (state, payload: number) => ({ ...state, volume: payload }),
+    // Synced from the SDK's player_state_changed event.
+    setPlaybackState: (state, payload: PlaybackSnapshot) => ({
+      ...state,
+      ...payload,
+      isActive: true,
+    }),
+    // Optimistic update when the user starts a track from the UI.
+    setTrack: (state, payload: SpotifyApi.TrackObjectFull) => ({
+      ...state,
+      id: payload.id,
+      name: payload.name,
+      artist: payload.artists[0]?.name ?? "",
+      artistId: payload.artists[0]?.id ?? "",
+      album: payload.album?.name ?? "",
+      image: payload.album?.images[0]?.url ?? "",
+      duration: payload.duration_ms,
+      position: 0,
+      isPlaying: true,
+    }),
   },
   effects: (dispatch) => ({
-    playTrack(payload: SpotifyApi.TrackObjectFull) {
-      dispatch.playingSong.setTrack(payload);
-      dispatch.playingSong.setIsPlaying(true);
+    async playTrack({
+      access_token,
+      deviceId,
+      track,
+    }: {
+      access_token: string;
+      deviceId: string;
+      track: SpotifyApi.TrackObjectFull;
+    }) {
+      if (!deviceId) return;
+      await startPlayback(access_token, deviceId, [`spotify:track:${track.id}`]);
+      dispatch.playingSong.setTrack(track);
     },
-    pauseTrack() {
-      dispatch.playingSong.setIsPlaying(false);
-    }
   }),
 });
