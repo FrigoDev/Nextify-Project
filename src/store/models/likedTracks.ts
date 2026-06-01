@@ -1,5 +1,10 @@
 import { createModel } from "@rematch/core";
 
+import {
+  removeFromLibrary,
+  saveToLibrary,
+  toUri,
+} from "@/lib/spotifyLibrary";
 import spotifyApi from "@/lib/spotifyWebApi";
 
 import type { RootModel } from ".";
@@ -59,8 +64,7 @@ export const likedTracks = createModel<RootModel>()({
       access_token: string;
       trackId: string;
     }) {
-      spotifyApi.setAccessToken(access_token);
-      await spotifyApi.addToMySavedTracks([trackId]);
+      await saveToLibrary(access_token, [toUri("track", trackId)]);
       dispatch.likedTracks.addLikedTrack(trackId);
     },
     async unlikeTrack({
@@ -70,8 +74,7 @@ export const likedTracks = createModel<RootModel>()({
       access_token: string;
       trackId: string;
     }) {
-      spotifyApi.setAccessToken(access_token);
-      await spotifyApi.removeFromMySavedTracks([trackId]);
+      await removeFromLibrary(access_token, [toUri("track", trackId)]);
       dispatch.likedTracks.removeLikedTrack(trackId);
     },
   }),
