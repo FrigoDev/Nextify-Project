@@ -35,7 +35,7 @@ export default function UserInfo({
           <h3 className="text-2xl font-bold my-2 text-white">
             {user.display_name}
           </h3>
-          <p className="text-xl text-white">{user.email}</p>
+          {user.email && <p className="text-xl text-white">{user.email}</p>}
         </div>
       </Header>
       <div className="flex flex-col items-center justify-center">
@@ -129,7 +129,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         followedArtists: followedArtists.body.artists.items,
       },
     };
-  } catch (err) {
+  } catch {
     return {
       notFound: true,
     };
