@@ -1,11 +1,6 @@
 export enum Pages {
   HOME = "/",
   LOGIN = "/login",
-  REGISTER = "/register",
-  PROFILE = "/profile",
-  RELEASES = "/releases",
-  FEATURED_PLAYLIST = "/featured-playlists",
-  CATEGORIES = "/categories",
   PLAYLIST = "/playlists",
   ARTIST = "/artists",
   ALBUM = "/albums",
