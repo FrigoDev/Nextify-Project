@@ -104,9 +104,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       };
     }
     return result;
-  } catch (error: unknown) {
-    const errorMessage = (error as { body: { error: { message: string } } })
-      ?.body?.error?.message;
+  } catch {
     return {
       notFound: true,
     };

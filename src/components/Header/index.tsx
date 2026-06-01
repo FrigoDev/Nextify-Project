@@ -47,7 +47,11 @@ const Header = ({ children }: { children: React.ReactNode }) => {
             label: option.name,
           }))}
           onSelect={(value) => {
-            value.value === "1" ? router.push("/user") : signOut();
+            if (value.value === "1") {
+              router.push("/user");
+            } else {
+              signOut();
+            }
           }}
         >
           <div className="absolute top-5 z-10 right-8 max-[550px]:hidden">

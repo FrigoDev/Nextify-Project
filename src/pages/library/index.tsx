@@ -112,7 +112,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         likedAlbums: likedAlbums.body,
       },
     };
-  } catch (error: unknown) {
+  } catch {
     return {
       notFound: true,
     };

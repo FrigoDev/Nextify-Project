@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { BuiltInProviderType } from "next-auth/providers";
+import { BuiltInProviderType } from "next-auth/providers/index";
 import {
   ClientSafeProvider,
   LiteralUnion,

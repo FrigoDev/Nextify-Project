@@ -64,9 +64,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   spotifyApi.setAccessToken(token?.accessToken ?? "");
   try {
     return await getPlaylistTracks(offset, LIMIT, playListId as string);
-  } catch (error: unknown) {
-    const errorMessage = (error as { body: { error: { message: string } } })
-      ?.body?.error?.message;
+  } catch {
     return {
       notFound: true,
     };

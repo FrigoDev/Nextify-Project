@@ -28,7 +28,7 @@ export default function LikedTracks({
           access_token: session?.data?.accessToken as string,
           trackId: trackId,
         });
-        callback && callback();
+        if (callback) callback();
       }}
       className="mx-2 my-auto cursor-pointer min-w-[20px] min-h-[20px] hover:text-white hover:underline"
     />
@@ -40,7 +40,7 @@ export default function LikedTracks({
           access_token: session?.data?.accessToken as string,
           trackId: trackId,
         });
-        callback && callback();
+        if (callback) callback();
       }}
       className="mx-2 my-auto cursor-pointer min-w-[20px] min-h-[20px] hover:text-white hover:underline"
     />

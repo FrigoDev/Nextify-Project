@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 
 import type { AppProps } from "next/app";
+import Head from "next/head";
 import { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 import { Provider } from "react-redux";
@@ -16,6 +17,9 @@ const App = ({
 }: AppProps<{ session: Session }>) => {
   return (
     <SessionProvider session={session}>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <Loading>
