@@ -60,6 +60,7 @@ const Index = ({ topTracks, topArtists, playlists, savedAlbums }: indexProps) =>
             title={playlist.name}
             description={playlist?.owner?.display_name ?? ""}
             link={`${Pages.PLAYLIST}/${playlist.id}`}
+            contextUri={playlist.uri}
           />
         ))}
       </SectionDivider>
@@ -71,6 +72,7 @@ const Index = ({ topTracks, topArtists, playlists, savedAlbums }: indexProps) =>
             title={album.name}
             description={album.artists[0]?.name ?? ""}
             link={`${Pages.ALBUM}/${album.id}`}
+            contextUri={album.uri}
           />
         ))}
       </SectionDivider>

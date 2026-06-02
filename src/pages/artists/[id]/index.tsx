@@ -38,6 +38,7 @@ export default function ArtistPage({ artist, albums }: ArtistPageProps) {
             image={album?.images[0]?.url ?? "https://via.placeholder.com/300"}
             link={`${Pages.ALBUM}/${album.id}`}
             description=""
+            contextUri={album.uri}
           />
         ))}
       </SectionDivider>
