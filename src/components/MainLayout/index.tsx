@@ -20,9 +20,7 @@ export default function MainLayout({
         <Sidebar />
         {children}
       </div>
-      <div className="fixed max-[450px]:bottom-[65px] bottom-0 w-full bg-[#121212] border-t border-gray-900 text-white">
-        <NowPlaying />
-      </div>
+      <NowPlaying />
     </div>
   );
 }

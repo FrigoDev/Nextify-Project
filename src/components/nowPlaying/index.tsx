@@ -3,11 +3,20 @@ import Link from "next/link";
 import Script from "next/script";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useRef } from "react";
-import { FaPause, FaPlay } from "react-icons/fa";
-import { FiVolume2 } from "react-icons/fi";
+import {
+  FaPause,
+  FaPlay,
+  FaRandom,
+  FaStepBackward,
+  FaStepForward,
+  FaVolumeMute,
+  FaVolumeUp,
+} from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Assets } from "@/constants";
+import { setShuffle as setShuffleApi } from "@/lib/spotifyPlayer";
+import { setPlayerInstance } from "@/lib/spotifyPlayerInstance";
 import { Dispatch, RootState } from "@/store/store";
 
 import LikedTracks from "../likeButtons/likedTracks";
@@ -19,10 +28,12 @@ export default function NowPlaying() {
   const dispatch = useDispatch<Dispatch>();
   const { data: session } = useSession();
   const nowPlaying = useSelector((state: RootState) => state.playingSong);
-  const { isPlaying, position, duration, volume } = nowPlaying;
+  const { isPlaying, position, duration, volume, shuffle, deviceId } =
+    nowPlaying;
 
   const playerRef = useRef<Spotify.Player | null>(null);
   const tokenRef = useRef<string>("");
+  const lastVolume = useRef<number>(0.5);
 
   // Keep the latest access token available to the SDK's getOAuthToken callback.
   useEffect(() => {
@@ -38,6 +49,7 @@ export default function NowPlaying() {
       volume: 0.5,
     });
     playerRef.current = player;
+    setPlayerInstance(player);
 
     player.addListener("ready", ({ device_id }) => {
       dispatch.playingSong.setDeviceId(device_id);
@@ -61,6 +73,8 @@ export default function NowPlaying() {
         duration: state.duration,
         position: state.position,
         isPlaying: !state.paused,
+        shuffle: state.shuffle,
+        contextUri: state.context?.uri ?? "",
       });
     });
     player.addListener("authentication_error", ({ message }) =>
@@ -88,6 +102,7 @@ export default function NowPlaying() {
     return () => {
       playerRef.current?.disconnect();
       playerRef.current = null;
+      setPlayerInstance(null);
     };
   }, []);
 
@@ -112,73 +127,148 @@ export default function NowPlaying() {
   };
 
   const onChangeVolume = (value: number) => {
+    if (value > 0) lastVolume.current = value;
     dispatch.playingSong.setVolume(value);
     playerRef.current?.setVolume(value);
   };
 
+  const toggleMute = () => {
+    onChangeVolume(volume > 0 ? 0 : lastVolume.current || 0.5);
+  };
+
+  const fill = (pct: number) =>
+    `linear-gradient(to right, #1db954 ${pct}%, #4d4d4d ${pct}%)`;
+  const progressPct = duration ? (position / duration) * 100 : 0;
+
+  const toggleShuffle = async () => {
+    if (!session?.accessToken || !deviceId) return;
+    const next = !shuffle;
+    dispatch.playingSong.setShuffle(next);
+    try {
+      await setShuffleApi(session.accessToken, deviceId, next);
+    } catch (err) {
+      console.error("Failed to toggle shuffle:", err);
+    }
+  };
+
+  const hasTrack = Boolean(nowPlaying.id);
+
+  // The bar stays mounted; only the track info appears once something plays.
   return (
     <>
       <Script
         src="https://sdk.scdn.co/spotify-player.js"
         strategy="afterInteractive"
       />
-      <div className="flex items-center justify-between px-4 py-2">
-        <div className="flex flex-row min-w-0">
-          <Image
-            className="cursor-pointer rounded-md"
-            src={nowPlaying.image ? nowPlaying.image : Assets.DEFAULT_IMAGE}
-            width={50}
-            height={50}
-            alt={nowPlaying.name}
-          />
-          <div className="flex flex-col mx-2 my-auto min-w-0">
-            <Link href={`/tracks/${nowPlaying.id}`}>
-              <p className="text-sm font-bold cursor-pointer hover:underline break-words line-clamp-2 max-[450px]:text-sx">
-                {nowPlaying.name}
-              </p>
-            </Link>
-            <Link href={`/artists/${nowPlaying.artistId}`}>
-              <p className="text-xs text-gray-400 cursor-pointer hover:text-white hover:underline break-words line-clamp-1">
-                {nowPlaying.artist}
-              </p>
-            </Link>
+      <div className="fixed bottom-0 max-[450px]:bottom-[65px] w-full bg-[#181818] border-t border-gray-800 text-white">
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          {/* Track info (only once a track is loaded) */}
+          <div className="flex flex-row items-center min-w-0 w-1/3">
+            {hasTrack && (
+              <>
+                <Image
+                  className="rounded-md"
+                  src={
+                    nowPlaying.image ? nowPlaying.image : Assets.DEFAULT_IMAGE
+                  }
+                  width={56}
+                  height={56}
+                  alt={nowPlaying.name}
+                />
+                <div className="flex flex-col mx-3 my-auto min-w-0">
+                  <Link href={`/tracks/${nowPlaying.id}`}>
+                    <p className="text-sm font-bold cursor-pointer hover:underline truncate">
+                      {nowPlaying.name}
+                    </p>
+                  </Link>
+                  <Link href={`/artists/${nowPlaying.artistId}`}>
+                    <p className="text-xs text-gray-400 cursor-pointer hover:text-white hover:underline truncate">
+                      {nowPlaying.artist}
+                    </p>
+                  </Link>
+                </div>
+                <LikedTracks trackId={nowPlaying.id} />
+              </>
+            )}
           </div>
-          {nowPlaying.id && <LikedTracks trackId={nowPlaying.id} />}
-        </div>
-        <div className="flex flex-col justify-center w-1/3">
-          <button
-            className="bg-white hover:scale-105 text-black font-bold mx-auto py-3 px-3 rounded-full mb-2 disabled:opacity-40"
-            onClick={togglePlay}
-            disabled={!nowPlaying.isActive}
-          >
-            {isPlaying ? <FaPause /> : <FaPlay className="pl-1" />}
-          </button>
-          <div className="flex flex-row gap-2 justify-between max-[450px]:hidden">
-            <p className="text-xs text-gray-400">{formatTime(position)}</p>
+
+          {/* Transport + progress */}
+          <div className="flex flex-col items-center justify-center gap-1 w-1/3 max-w-[600px]">
+            <div className="flex flex-row items-center gap-5">
+              <button
+                aria-label="Shuffle"
+                onClick={toggleShuffle}
+                className={`${
+                  shuffle ? "text-green-500" : "text-gray-400"
+                } hover:text-white`}
+              >
+                <FaRandom className="h-4 w-4" />
+              </button>
+              <button
+                aria-label="Previous"
+                onClick={() => playerRef.current?.previousTrack()}
+                className="text-gray-300 hover:text-white"
+              >
+                <FaStepBackward className="h-4 w-4" />
+              </button>
+              <button
+                aria-label={isPlaying ? "Pause" : "Play"}
+                className="bg-white hover:scale-105 text-black rounded-full h-9 w-9 flex items-center justify-center"
+                onClick={togglePlay}
+              >
+                {isPlaying ? <FaPause /> : <FaPlay className="pl-0.5" />}
+              </button>
+              <button
+                aria-label="Next"
+                onClick={() => playerRef.current?.nextTrack()}
+                className="text-gray-300 hover:text-white"
+              >
+                <FaStepForward className="h-4 w-4" />
+              </button>
+              <div className="w-4" />
+            </div>
+            <div className="flex flex-row items-center gap-2 w-full max-[450px]:hidden">
+              <span className="text-[11px] text-gray-400 tabular-nums">
+                {formatTime(position)}
+              </span>
+              <input
+                type="range"
+                aria-label="Seek"
+                min={0}
+                max={duration || 0}
+                step={1000}
+                value={position}
+                className="player-range flex-1"
+                style={{ background: fill(progressPct) }}
+                onChange={(e) => onSeek(parseFloat(e.target.value))}
+              />
+              <span className="text-[11px] text-gray-400 tabular-nums">
+                {formatTime(duration)}
+              </span>
+            </div>
+          </div>
+
+          {/* Volume */}
+          <div className="flex flex-row items-center justify-end gap-2 w-1/3 max-[450px]:hidden">
+            <button
+              aria-label={volume > 0 ? "Mute" : "Unmute"}
+              onClick={toggleMute}
+              className="text-gray-300 hover:text-white"
+            >
+              {volume > 0 ? <FaVolumeUp /> : <FaVolumeMute />}
+            </button>
             <input
               type="range"
+              aria-label="Volume"
               min={0}
-              max={duration || 0}
-              step={1000}
-              value={position}
-              className="w-full h-1 m-auto"
-              disabled={!nowPlaying.isActive}
-              onChange={(e) => onSeek(parseFloat(e.target.value))}
+              max={1}
+              step="any"
+              value={volume}
+              onChange={(e) => onChangeVolume(parseFloat(e.target.value))}
+              className="player-range w-28 lg:w-36"
+              style={{ background: fill(volume * 100) }}
             />
-            <p className="text-xs text-gray-400">{formatTime(duration)}</p>
           </div>
-        </div>
-        <div className="flex flex-row max-[450px]:hidden">
-          <FiVolume2 />
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step="any"
-            value={volume}
-            onChange={(e) => onChangeVolume(parseFloat(e.target.value))}
-            className="w-16 h-1 m-auto"
-          />
         </div>
       </div>
     </>
