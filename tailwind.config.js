@@ -8,7 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Raleway", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
+        title: ["Montserrat", "sans-serif"],
       },
     },
   },
