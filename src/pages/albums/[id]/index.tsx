@@ -1,14 +1,16 @@
 import { GetServerSideProps } from "next";
-import Image from "next/image";
+import Link from "next/link";
 import { getToken } from "next-auth/jwt";
 import { FaClock } from "react-icons/fa";
 
-import Header from "@/components/Header";
+import Hero from "@/components/Hero";
 import LikedAlbums from "@/components/likeButtons/likedAlbums";
+import PlayButton from "@/components/PlayButton";
 import Song from "@/components/Song";
 import { Pages } from "@/constants";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import spotifyApi from "@/lib/spotifyWebApi";
+import { formatTotal } from "@/utils/duration";
 import controlData from "@/utils/getData";
 
 interface AlbumPageProps {
@@ -21,30 +23,33 @@ interface AlbumPageProps {
 
 export default function AlbumPage({ album, data: tracks }: AlbumPageProps) {
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const year = album.release_date
+    ? new Date(album.release_date).getFullYear()
+    : "";
+  const allLoaded = album.total_tracks <= tracks.length;
+  const totalMs = tracks.reduce((sum, t) => sum + (t?.duration_ms ?? 0), 0);
 
   return (
     <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide">
-      <Header>
-        <div className="flex flex-row">
-          <Image
-            src={album.images[0].url ?? "https://via.placeholder.com/300"}
-            alt="Album Image Cover"
-            width={200}
-            height={200}
-            className="rounded-lg mr-6 max-[400px]:w-24 max-[400px]:h-24 sm:w-[200px] sm:h-[200px] w-32 h-32"
-          />
-          <div className="flex flex-col justify-center mt-auto gap-1 sm:gap-4">
-            <p className="text-sm hidden sm:block font-bold">Album</p>
-            <h1 className="mt-auto text-2xl lg:text-4xl font-bold line-clamp-2">
-              {album.name}
-            </h1>
-            <p className="text-sm hidden sm:block font-bold">{`Author: ${
-              album.artists[0].name
-            } - ${new Date(album.release_date).getFullYear()}`}</p>
-          </div>
-        </div>
-      </Header>
-      <div className="text-white max-[425px]:px-6 px-8 mb-4">
+      <Hero
+        image={album.images[0]?.url}
+        label="Album"
+        title={album.name}
+        meta={[
+          <Link
+            key="artist"
+            href={`${Pages.ARTIST}/${album.artists[0].id}`}
+            className="font-bold hover:underline"
+          >
+            {album.artists[0].name}
+          </Link>,
+          year || null,
+          `${album.total_tracks} songs`,
+          allLoaded ? formatTotal(totalMs) : null,
+        ]}
+      />
+      <div className="flex flex-row items-center gap-5 text-white max-[425px]:px-6 px-8 my-5">
+        <PlayButton contextUri={album.uri} />
         <LikedAlbums albumId={album.id} />
       </div>
       {isMobile ? (
@@ -62,6 +67,7 @@ export default function AlbumPage({ album, data: tracks }: AlbumPageProps) {
                     },
                   } as SpotifyApi.TrackObjectFull
                 }
+                contextUri={album.uri}
               />
             ))}
         </div>
@@ -86,6 +92,7 @@ export default function AlbumPage({ album, data: tracks }: AlbumPageProps) {
                     },
                   } as SpotifyApi.TrackObjectFull
                 }
+                contextUri={album.uri}
               />
             ))}
         </div>

@@ -1,14 +1,20 @@
 import { GetServerSideProps } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { getToken } from "next-auth/jwt";
 import { useSession } from "next-auth/react";
-import { AiFillPlayCircle } from "react-icons/ai";
+import { Fragment } from "react";
+import { FaPlay } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 
-import Header from "@/components/Header";
+import Hero from "@/components/Hero";
 import LikedTracks from "@/components/likeButtons/likedTracks";
+import { Pages } from "@/constants";
+import { activatePlayer } from "@/lib/spotifyPlayerInstance";
 import spotifyApi from "@/lib/spotifyWebApi";
 import { Dispatch, RootState } from "@/store/store";
+
+const PLACEHOLDER = "https://via.placeholder.com/300";
 
 export default function TrackPage({
   track,
@@ -20,6 +26,7 @@ export default function TrackPage({
   const deviceId = useSelector((state: RootState) => state.playingSong.deviceId);
 
   const playTrack = () => {
+    activatePlayer();
     if (!deviceId || !session?.accessToken) return;
     dispatch.playingSong.playTrack({
       access_token: session.accessToken,
@@ -28,59 +35,73 @@ export default function TrackPage({
     });
   };
 
+  const year = track.album?.release_date
+    ? new Date(track.album.release_date).getFullYear()
+    : "";
+  const duration = new Date(track.duration_ms).toISOString().slice(14, 19);
+
   return (
     <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide pb-24">
-      <Header>
-        <div className="flex flex-row">
-          <Image
-            src={
-              track?.album?.images[0]?.url ?? "https://via.placeholder.com/300"
-            }
-            alt={track?.album?.name}
-            width={200}
-            height={200}
-            className="rounded-lg mr-6 max-[400px]:w-24 max-[400px]:h-24 sm:w-[200px] sm:h-[200px] w-32 h-32"
-          />
-          <div className="flex flex-col justify-center mt-auto gap-1 sm:gap-4">
-            <p className="text-sm hidden sm:block font-bold">Song</p>
-            <h1 className="mt-auto text-2xl lg:text-4xl font-bold line-clamp-2">
-              {track.name}
-            </h1>
-            <p className="text-sm hidden sm:block font-bold">
-              Artist {track.artists.map((artist) => artist.name).join(", ")}
-            </p>
-          </div>
-        </div>
-      </Header>
-      <div className="flex flex-row items-center gap-2 text-white max-[425px]:px-6 px-8 mb-4">
-        <LikedTracks trackId={track.id} />
-        <AiFillPlayCircle
-          role="button"
-          aria-label={`Play ${track.name}`}
+      <Hero
+        image={track?.album?.images[0]?.url}
+        label="Song"
+        title={track.name}
+        meta={[
+          <span key="artists" className="font-bold">
+            {track.artists.map((artist, i) => (
+              <Fragment key={artist.id}>
+                <Link
+                  href={`${Pages.ARTIST}/${artist.id}`}
+                  className="hover:underline"
+                >
+                  {artist.name}
+                </Link>
+                {i < track.artists.length - 1 ? ", " : ""}
+              </Fragment>
+            ))}
+          </span>,
+          <Link
+            key="album"
+            href={`${Pages.ALBUM}/${track.album.id}?page=1`}
+            className="hover:underline"
+          >
+            {track.album.name}
+          </Link>,
+          year || null,
+          duration,
+        ]}
+      />
+
+      <div className="flex flex-row items-center gap-5 text-white max-[425px]:px-6 px-8 my-5">
+        <button
+          aria-label="Play"
           onClick={playTrack}
-          className={`text-green-500 h-8 w-8 ${
-            deviceId ? "cursor-pointer hover:scale-110" : "opacity-40"
-          }`}
-        />
+          disabled={!deviceId}
+          className="flex items-center justify-center h-14 w-14 rounded-full bg-green-500 text-black shadow-lg transition hover:scale-105 hover:bg-green-400 disabled:opacity-40 disabled:hover:scale-100"
+        >
+          <FaPlay className="h-5 w-5 pl-0.5" />
+        </button>
+        <LikedTracks trackId={track.id} />
       </div>
-      <div className="flex flex-col items-center justify-center">
-        <h2 className="text-2xl text-white font-bold my-4">Song Data Table</h2>
-        <div className="grid grid-cols-2 border border-gray-300 w-3/4 md:w-1/2 lg:w-1/3 text-center text-white">
-          <p className="text-lg font-bold border border-gray-300">Album</p>
-          <p className="text-lg font-bold border border-gray-300">
-            {track?.album?.name}
-          </p>
-          <p className="text-lg font-bold border border-gray-300">
-            Release Date
-          </p>
-          <p className="text-lg font-bold border border-gray-300">
-            {track?.album?.release_date}
-          </p>
-          <p className="text-lg font-bold border border-gray-300">Duration</p>
-          <p className="text-lg font-bold border border-gray-300">
-            {new Date(track.duration_ms).toISOString().slice(14, 19)}
-          </p>
-        </div>
+
+      <div className="max-[425px]:px-6 px-8">
+        <Link
+          href={`${Pages.ALBUM}/${track.album.id}?page=1`}
+          className="inline-flex items-center gap-4 rounded-lg bg-white/5 p-4 transition hover:bg-white/10"
+        >
+          <Image
+            src={track.album.images[0]?.url ?? PLACEHOLDER}
+            alt={track.album.name}
+            width={80}
+            height={80}
+            className="rounded"
+          />
+          <div>
+            <p className="text-xs uppercase text-gray-400">From the album</p>
+            <p className="font-bold text-white">{track.album.name}</p>
+            {year && <p className="text-sm text-gray-400">{year}</p>}
+          </div>
+        </Link>
       </div>
     </div>
   );

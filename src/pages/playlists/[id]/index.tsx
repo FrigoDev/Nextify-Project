@@ -1,10 +1,11 @@
 import { GetServerSideProps } from "next";
-import Image from "next/image";
 import { getToken } from "next-auth/jwt";
 
-import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import PlayButton from "@/components/PlayButton";
 import Songs from "@/components/Songs";
 import spotifyApi from "@/lib/spotifyWebApi";
+import { formatTotal } from "@/utils/duration";
 
 export default function Playlist({
   playlist,
@@ -14,30 +15,35 @@ export default function Playlist({
   error?: string;
 }) {
   if (!playlist || error) return <h1>{error}</h1>;
+
+  const items = playlist.tracks.items;
+  const allLoaded = playlist.tracks.total <= items.length;
+  const totalMs = items.reduce(
+    (sum, t) => sum + (t?.track?.duration_ms ?? 0),
+    0
+  );
+  const followers = playlist.followers?.total ?? 0;
+
   return (
     <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide">
-      <Header>
-        <div className="flex flex-row">
-          <Image
-            src={playlist.images[0].url}
-            alt="Playlist Image Cover"
-            width={200}
-            height={200}
-            className="rounded-lg mr-6 max-[400px]:w-24 max-[400px]:h-24 sm:w-[200px] sm:h-[200px] w-32 h-32"
-          />
-          <div className="flex flex-col h-2/3 justify-center mt-auto gap-1 sm:gap-4">
-            <p className="text-sm hidden sm:block font-bold">Playlist</p>
-            <h1 className="mt-auto text-2xl lg:text-4xl font-bold line-clamp-2">
-              {playlist.name}
-            </h1>
-            <p className="text-gray-300 text-sm line-clamp-2">
-              {playlist.description}
-            </p>
-            <p className="text-sm hidden sm:block font-bold">{`Author: ${playlist.owner.display_name}`}</p>
-          </div>
-        </div>
-      </Header>
-      <Songs tracks={playlist.tracks.items} />
+      <Hero
+        image={playlist.images[0]?.url}
+        label="Playlist"
+        title={playlist.name}
+        description={playlist.description}
+        meta={[
+          <span key="owner" className="font-bold">
+            {playlist.owner.display_name}
+          </span>,
+          followers > 0 ? `${followers.toLocaleString()} likes` : null,
+          `${playlist.tracks.total} songs`,
+          allLoaded && totalMs > 0 ? formatTotal(totalMs) : null,
+        ]}
+      />
+      <div className="max-[425px]:px-6 px-8 my-5">
+        <PlayButton contextUri={playlist.uri} />
+      </div>
+      <Songs tracks={items} contextUri={playlist.uri} />
     </div>
   );
 }
