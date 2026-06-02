@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FaHome, FaSearch } from "react-icons/fa";
 import { SiLibrariesdotio } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +12,10 @@ import { Pages } from "@/constants/index";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { RootStates } from "@/store/models";
 import { Dispatch } from "@/store/store";
+
+const MIN_WIDTH = 180;
+const MAX_WIDTH = 420;
+const DEFAULT_WIDTH = 240;
 
 const Sidebar = () => {
   const { data: session } = useSession();
@@ -29,8 +35,41 @@ const Sidebar = () => {
   useSWR(session?.accessToken, fetcher);
 
   const playlist = useSelector((state: RootStates) => state.onlinePlayList);
+  const contextUri = useSelector(
+    (state: RootStates) => state.playingSong.contextUri
+  );
+  const router = useRouter();
 
   const isMobile = useMediaQuery("(max-width: 450px)");
+
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
+  const widthRef = useRef(DEFAULT_WIDTH);
+
+  useEffect(() => {
+    const saved = Number(localStorage.getItem("sidebarWidth"));
+    if (saved >= MIN_WIDTH && saved <= MAX_WIDTH) {
+      setWidth(saved);
+      widthRef.current = saved;
+    }
+  }, []);
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    document.body.style.userSelect = "none";
+    const onMove = (ev: MouseEvent) => {
+      const w = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, ev.clientX));
+      widthRef.current = w;
+      setWidth(w);
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.body.style.userSelect = "";
+      localStorage.setItem("sidebarWidth", String(widthRef.current));
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }, []);
 
   return (
     <>
@@ -58,54 +97,74 @@ const Sidebar = () => {
           </ul>
         </nav>
       ) : (
-        <section className="flex-shrink-0 overflow-auto h-[100vh] scrollbar-hide text-gray-500 p-5 pb-24 text-sm bg-black border-r border-gray-900 max-[450px]:hidden">
-          <div className="space-y-4">
-            <Link
-              className="flex items-center justify-center sm:justify-normal m-0 space-x-2 hover:text-white"
-              href={Pages.HOME}
-            >
-              <FaHome className="sm:h-5 sm:w-5 h-6 w-6" />
-              <p className="hidden sm:block">Home</p>
-            </Link>
-            <Link
-              className="flex items-center justify-center sm:justify-normal m-0 space-x-2 hover:text-white"
-              href={Pages.SEARCH}
-            >
-              <FaSearch className="sm:h-5 sm:w-5 h-6 w-6" />
-              <p className="hidden sm:block">Search</p>
-            </Link>
-            <Link
-              className="flex items-center justify-center sm:justify-normal m-0 space-x-2 hover:text-white"
-              href={Pages.LIBRARY}
-            >
-              <SiLibrariesdotio className="sm:h-5 sm:w-5 h-6 w-6" />
-              <p className="hidden sm:block">Your Library</p>
-            </Link>
-          </div>
-          <div className="space-y-4">
-            <hr className="border-t-[0.1]px border-gray-900 mt-4" />
-            {playlist.map((item) => (
+        <section
+          style={{ width }}
+          className="relative flex-shrink-0 h-[100vh] bg-black border-r border-gray-900 max-[450px]:hidden"
+        >
+          <div className="h-full overflow-auto scrollbar-hide text-gray-500 p-5 pb-24 text-sm">
+            <div className="space-y-4">
               <Link
-                href={`/playlists/${item.id}`}
-                key={item.id}
-                className="flex items-center space-x-2 hover:text-white mb-2"
+                className="flex items-center space-x-3 hover:text-white"
+                href={Pages.HOME}
               >
-                <Image
-                  src={
-                    item?.images[0]?.url ??
-                    "/assets/images/SpotifyDefaultImage.jpg"
-                  }
-                  alt={item.name}
-                  width={50}
-                  height={50}
-                  className="h-[50px] w-[50px] mx-auto object-cover rounded-sm"
-                />
-                <p className="text-sm truncate hidden w-24 sm:mx-0 sm:block md:w-36">
-                  {item.name}
-                </p>
+                <FaHome className="h-6 w-6 shrink-0" />
+                <p>Home</p>
               </Link>
-            ))}
+              <Link
+                className="flex items-center space-x-3 hover:text-white"
+                href={Pages.SEARCH}
+              >
+                <FaSearch className="h-6 w-6 shrink-0" />
+                <p>Search</p>
+              </Link>
+              <Link
+                className="flex items-center space-x-3 hover:text-white"
+                href={Pages.LIBRARY}
+              >
+                <SiLibrariesdotio className="h-6 w-6 shrink-0" />
+                <p>Your Library</p>
+              </Link>
+            </div>
+            <div className="space-y-2 mt-4">
+              <hr className="border-t-[0.1]px border-gray-900" />
+              {playlist.map((item) => {
+                const isActive =
+                  router.pathname === "/playlists/[id]" &&
+                  router.query.id === item.id;
+                const isPlaying =
+                  contextUri === `spotify:playlist:${item.id}`;
+                return (
+                  <Link
+                    href={`/playlists/${item.id}`}
+                    key={item.id}
+                    className={`flex items-center space-x-3 w-full rounded px-2 py-1 ${
+                      isPlaying ? "text-green-500" : "hover:text-white"
+                    } ${isActive ? "bg-white/10" : ""}`}
+                  >
+                    <Image
+                      src={
+                        item?.images[0]?.url ??
+                        "/assets/images/SpotifyDefaultImage.jpg"
+                      }
+                      alt={item.name}
+                      width={50}
+                      height={50}
+                      className="h-[50px] w-[50px] object-cover rounded-sm shrink-0"
+                    />
+                    <p className="text-sm truncate flex-1 min-w-0">
+                      {item.name}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
+          <div
+            onMouseDown={startResize}
+            role="separator"
+            aria-orientation="vertical"
+            className="absolute top-0 right-0 h-full w-1.5 cursor-col-resize hover:bg-green-500/40 active:bg-green-500/60"
+          />
         </section>
       )}
     </>
