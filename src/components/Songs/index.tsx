@@ -4,7 +4,13 @@ import useMediaQuery from "@/hooks/useMediaQuery";
 
 import Song from "../Song";
 
-const Songs = ({ tracks }: { tracks: SpotifyApi.PlaylistTrackObject[] }) => {
+const Songs = ({
+  tracks,
+  contextUri,
+}: {
+  tracks: SpotifyApi.PlaylistTrackObject[];
+  contextUri?: string;
+}) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
@@ -13,21 +19,34 @@ const Songs = ({ tracks }: { tracks: SpotifyApi.PlaylistTrackObject[] }) => {
         <div className="px-8 flex flex-col space-y-1 pb-20 text-white">
           {tracks.map((track, i) =>
             track.track ? (
-              <Song key={track?.track?.id} track={track?.track} order={i + 1} />
+              <Song
+                key={track?.track?.id}
+                track={track?.track}
+                order={i + 1}
+                contextUri={contextUri}
+                addedAt={track.added_at}
+              />
             ) : null
           )}
         </div>
       ) : (
         <div className="px-8 flex flex-col space-y-1 pb-24 max-[450px]:pb-72 text-white">
-          <div className="album-grid my-4 border-b border-gray-400 text-gray-400">
+          <div className="playlist-grid my-4 border-b border-gray-400 text-gray-400">
             <p>#</p>
             <p>Title</p>
             <p>Album</p>
+            <p className="hidden md:block">Date added</p>
             <FaClock />
           </div>
           {tracks.map((track, i) =>
             track.track ? (
-              <Song key={track?.track?.id} track={track?.track} order={i + 1} />
+              <Song
+                key={track?.track?.id}
+                track={track?.track}
+                order={i + 1}
+                contextUri={contextUri}
+                addedAt={track.added_at}
+              />
             ) : null
           )}
         </div>
