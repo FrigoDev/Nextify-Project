@@ -1,6 +1,6 @@
 import { createModel } from "@rematch/core";
 
-import { startPlayback } from "@/lib/spotifyPlayer";
+import { startContext, startPlayback } from "@/lib/spotifyPlayer";
 
 import type { RootModel } from ".";
 
@@ -19,7 +19,10 @@ export interface NowPlayingState {
   duration: number;
   position: number;
   isPlaying: boolean;
+  shuffle: boolean;
   volume: number;
+  // URI of the playing context (e.g. "spotify:playlist:..."), "" for none.
+  contextUri: string;
 }
 
 const initialState: NowPlayingState = {
@@ -34,7 +37,9 @@ const initialState: NowPlayingState = {
   duration: 0,
   position: 0,
   isPlaying: false,
+  shuffle: false,
   volume: 0.5,
+  contextUri: "",
 };
 
 export interface PlaybackSnapshot {
@@ -47,6 +52,8 @@ export interface PlaybackSnapshot {
   duration: number;
   position: number;
   isPlaying: boolean;
+  shuffle: boolean;
+  contextUri: string;
 }
 
 export const playingSong = createModel<RootModel>()({
@@ -60,6 +67,7 @@ export const playingSong = createModel<RootModel>()({
     }),
     setPosition: (state, payload: number) => ({ ...state, position: payload }),
     setVolume: (state, payload: number) => ({ ...state, volume: payload }),
+    setShuffle: (state, payload: boolean) => ({ ...state, shuffle: payload }),
     // Synced from the SDK's player_state_changed event.
     setPlaybackState: (state, payload: PlaybackSnapshot) => ({
       ...state,
@@ -78,6 +86,7 @@ export const playingSong = createModel<RootModel>()({
       duration: payload.duration_ms,
       position: 0,
       isPlaying: true,
+      contextUri: "",
     }),
   },
   effects: (dispatch) => ({
@@ -91,8 +100,32 @@ export const playingSong = createModel<RootModel>()({
       track: SpotifyApi.TrackObjectFull;
     }) {
       if (!deviceId) return;
-      await startPlayback(access_token, deviceId, [`spotify:track:${track.id}`]);
-      dispatch.playingSong.setTrack(track);
+      try {
+        await startPlayback(access_token, deviceId, [
+          `spotify:track:${track.id}`,
+        ]);
+        dispatch.playingSong.setTrack(track);
+      } catch (err) {
+        console.error("Failed to start playback:", err);
+      }
+    },
+    async playContext({
+      access_token,
+      deviceId,
+      contextUri,
+      offsetUri,
+    }: {
+      access_token: string;
+      deviceId: string;
+      contextUri: string;
+      offsetUri?: string;
+    }) {
+      if (!deviceId) return;
+      try {
+        await startContext(access_token, deviceId, contextUri, offsetUri);
+      } catch (err) {
+        console.error("Failed to start context playback:", err);
+      }
     },
   }),
 });
