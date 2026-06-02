@@ -13,7 +13,12 @@
 
 const API_BASE = "https://api.spotify.com/v1";
 
-export type SpotifyEntity = "track" | "album" | "episode" | "show" | "audiobook";
+export type SpotifyEntity =
+  | "track"
+  | "album"
+  | "episode"
+  | "show"
+  | "audiobook";
 
 export const toUri = (type: SpotifyEntity, id: string): string =>
   `spotify:${type}:${id}`;
@@ -21,10 +26,11 @@ export const toUri = (type: SpotifyEntity, id: string): string =>
 const libraryRequest = async (
   accessToken: string,
   method: "PUT" | "DELETE",
-  uris: string[]
+  uris: string[],
 ): Promise<void> => {
   if (uris.length === 0) return;
-  const res = await fetch(`${API_BASE}/me/library`, {
+  const query = encodeURIComponent(uris.join(","));
+  const res = await fetch(`${API_BASE}/me/library?uris=${query}`, {
     method,
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -35,24 +41,24 @@ const libraryRequest = async (
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
     throw new Error(
-      `Spotify ${method} /me/library failed (${res.status}): ${detail}`
+      `Spotify ${method} /me/library failed (${res.status}): ${detail}`,
     );
   }
 };
 
 export const saveToLibrary = (
   accessToken: string,
-  uris: string[]
+  uris: string[],
 ): Promise<void> => libraryRequest(accessToken, "PUT", uris);
 
 export const removeFromLibrary = (
   accessToken: string,
-  uris: string[]
+  uris: string[],
 ): Promise<void> => libraryRequest(accessToken, "DELETE", uris);
 
 export const libraryContains = async (
   accessToken: string,
-  uris: string[]
+  uris: string[],
 ): Promise<boolean[]> => {
   if (uris.length === 0) return [];
   const query = encodeURIComponent(uris.join(","));
@@ -62,7 +68,7 @@ export const libraryContains = async (
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
     throw new Error(
-      `Spotify GET /me/library/contains failed (${res.status}): ${detail}`
+      `Spotify GET /me/library/contains failed (${res.status}): ${detail}`,
     );
   }
   return (await res.json()) as boolean[];
