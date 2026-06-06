@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 
 import NowPlaying from "../nowPlaying";
 import Sidebar from "../Sidebar";
+import TopBar from "../TopBar";
 
 export default function MainLayout({
   children,
@@ -16,9 +17,14 @@ export default function MainLayout({
       <Head>
         <title>Nextify</title>
       </Head>
-      <div className="flex">
+      <div className="flex h-screen">
         <Sidebar />
-        {children}
+        <div className="flex flex-col flex-1 min-w-0">
+          <TopBar />
+          <main className="flex-1 overflow-y-auto scrollbar-hide">
+            {children}
+          </main>
+        </div>
       </div>
       <NowPlaying />
     </div>
