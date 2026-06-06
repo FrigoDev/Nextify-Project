@@ -15,7 +15,7 @@ interface ArtistPageProps {
 
 export default function ArtistPage({ artist, albums }: ArtistPageProps) {
   return (
-    <div className="flex-grow items-center h-screen overflow-y-scroll scrollbar-hide pb-24 max-[450px]:pb-16">
+    <div className="items-center pb-24 max-[450px]:pb-16">
       <Header>
         <div className="flex flex-col items-center justify-center">
           <div className="flex flex-col items-center justify-center">

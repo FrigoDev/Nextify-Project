@@ -25,7 +25,7 @@ export default function AlbumPage({
   totalPages,
 }: AlbumPageProps) {
   return (
-    <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide pb-24">
+    <div className="pb-24">
       <Header>
         <div className="flex flex-row">
           <Image

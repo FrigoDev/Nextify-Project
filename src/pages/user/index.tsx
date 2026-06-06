@@ -22,7 +22,7 @@ export default function UserInfo({
   topTracks,
 }: UserInfoProps) {
   return (
-    <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide pb-24">
+    <div className="pb-24">
       <Header>
         <div className="flex flex-col items-center justify-center">
           <Image

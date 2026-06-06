@@ -30,7 +30,7 @@ export default function AlbumPage({ album, data: tracks }: AlbumPageProps) {
   const totalMs = tracks.reduce((sum, t) => sum + (t?.duration_ms ?? 0), 0);
 
   return (
-    <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide">
+    <div>
       <Hero
         image={album.images[0]?.url}
         label="Album"

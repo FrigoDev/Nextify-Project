@@ -25,7 +25,7 @@ export default function Playlist({
   const followers = playlist.followers?.total ?? 0;
 
   return (
-    <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide">
+    <div>
       <Hero
         image={playlist.images[0]?.url}
         label="Playlist"

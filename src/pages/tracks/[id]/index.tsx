@@ -41,7 +41,7 @@ export default function TrackPage({
   const duration = new Date(track.duration_ms).toISOString().slice(14, 19);
 
   return (
-    <div className="flex-grow h-screen overflow-y-scroll scrollbar-hide pb-24">
+    <div className="pb-24">
       <Hero
         image={track?.album?.images[0]?.url}
         label="Song"

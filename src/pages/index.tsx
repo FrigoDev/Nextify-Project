@@ -19,7 +19,7 @@ interface indexProps {
 
 const Index = ({ topTracks, topArtists, playlists, savedAlbums }: indexProps) => {
   return (
-    <div className="items-center h-screen overflow-y-scroll scrollbar-hide pb-24 max-[450px]:pb-16">
+    <div className="items-center pb-24 max-[450px]:pb-16">
       <Header>
         <div className="flex flex-col mt-10 max-[550px]:mt-4">
           <div className="flex flex-row justify-between mb-4 space-x-4">
