@@ -1,15 +1,16 @@
-import { debounce } from "lodash";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { JWT, getToken } from "next-auth/jwt";
-import { useCallback } from "react";
 
 import Card from "@/components/Card";
 import { Pages } from "@/constants";
 import { getEmtpySearch, spotifySearch } from "@/utils/search";
 
-const filters = ["Album", "Artist", "Track"];
+const filters = [
+  { label: "Songs", type: "track" },
+  { label: "Albums", type: "album" },
+  { label: "Artists", type: "artist" },
+];
 
 interface SearchProps {
   searchResult: SpotifyApi.SearchResponse;
@@ -28,62 +29,32 @@ export default function Search({
   ssrSearchParam,
   searchResult,
 }: SearchProps) {
-  const router = useRouter();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearch = useCallback(
-    debounce((newSearchParams: string) => {
-      router.push({
-        pathname: router.pathname,
-        query: {
-          ...(newSearchParams && { search: newSearchParams }),
-        },
-      });
-    }, 500),
-    [router.query]
-  );
   return (
-    <div className="overflow-y-auto h-screen scrollbar-hide w-full pb-24">
-      <div className="flex justify-center items-center p-4 bg-gradient-to-r from-green-400 to-green-700 text-white">
-        <h1 className="text-lg lg:text-2xl font-bold text-white">Search</h1>
-        <div className="flex justify-center">
-          <input
-            type="text"
-            className="bg-gray-800 text-white rounded-full px-1 py-1 ml-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            defaultValue={ssrSearchParam}
-            onChange={(e) => {
-              debouncedSearch(e.target.value.trim());
-            }}
-          />
-        </div>
-      </div>
-      <div className="flex flex-row flex-wrap justify-center min-[300px]:justify-around items-center mt-2 my-4">
+    <div className="pb-24">
+      <div className="flex flex-wrap items-center gap-2 px-6 py-4">
         <Link
-          className="mx-1"
           href={{
-            pathname: router.pathname,
-            query: {
-              search: ssrSearchParam,
-            },
+            pathname: Pages.SEARCH,
+            ...(ssrSearchParam && { query: { search: ssrSearchParam } }),
           }}
         >
-          <button className="bg-green-700 hover:bg-green-700 text-white font-bold my-1 py-2 px-4 rounded-full">
+          <button className="rounded-full px-4 py-1.5 text-sm font-medium bg-white text-black">
             All
           </button>
         </Link>
         {filters.map((filter) => (
           <Link
-            className="mx-1"
-            key={filter}
+            key={filter.type}
             href={{
-              pathname: router.pathname + `/${filter.toLowerCase()}`,
+              pathname: `${Pages.SEARCH}/${filter.type}`,
               query: {
                 search: ssrSearchParam,
                 page: 1,
               },
             }}
           >
-            <button className="bg-green-500 hover:bg-green-700 text-white font-bold my-1 py-2 px-4 rounded-full">
-              {filter}
+            <button className="rounded-full px-4 py-1.5 text-sm font-medium bg-[#232323] text-white hover:bg-[#2a2a2a]">
+              {filter.label}
             </button>
           </Link>
         ))}
@@ -121,7 +92,7 @@ export default function Search({
                   }
                   title={item.name}
                   description={item.genres?.slice(0, 3).join(", ") ?? ""}
-                  link={item.external_urls.spotify}
+                  link={`${Pages.ARTIST}/${item.id}`}
                 />
               ))}
             </div>
@@ -153,7 +124,7 @@ export default function Search({
         )}
         {searchResult?.tracks && (
           <div className="flex flex-col items-center justify-center">
-            <h2 className="text-4xl text-white font-bold my-4">Tracks</h2>
+            <h2 className="text-4xl text-white font-bold my-4">Songs</h2>
             <div className="grid grid-cols-1 lg:grid-cols-4 min-[720px]:grid-cols-2 grid-flow-row md:gap-12 gap-4">
               {searchResult.tracks.items.map((item) => (
                 <Card
@@ -169,7 +140,7 @@ export default function Search({
                       .map((artist) => artist.name)
                       .join(", ") ?? ""
                   }
-                  link={item.external_urls.spotify}
+                  link={`${Pages.TRACKS}/${item.id}`}
                 />
               ))}
             </div>

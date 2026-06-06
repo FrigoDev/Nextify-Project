@@ -1,9 +1,7 @@
-import { debounce } from "lodash";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { getToken } from "next-auth/jwt";
-import { useCallback } from "react";
 
 import Card from "@/components/Card";
 import Pagination from "@/components/Pagination";
@@ -15,7 +13,11 @@ import {
   spotifySearch,
 } from "@/utils/search";
 
-const filters = ["album", "artist", "track"];
+const filters = [
+  { label: "Songs", type: "track" },
+  { label: "Albums", type: "album" },
+  { label: "Artists", type: "artist" },
+];
 
 interface SearchProps {
   searchResult: SpotifyApi.SearchResponse;
@@ -45,60 +47,43 @@ export default function Search({
     | "artists"
     | "tracks";
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearch = useCallback(
-    debounce((newSearchParams: string) => {
-      router.push(
-        `${Pages.SEARCH}/${router.query.types}?search=${newSearchParams}&page=1`
-      );
-    }, 500),
-    [router.query]
-  );
   return (
-    <div className="overflow-y-auto h-screen scrollbar-hide w-full pb-24">
-      <div className="flex justify-center items-center h-20 bg-gradient-to-r from-green-400 to-green-700 text-white">
-        <h1 className="text-lg lg:text-2xl font-bold text-white">Search</h1>
-        <div className="flex justify-center">
-          <input
-            type="text"
-            className=" bg-gray-800 text-white rounded-full px-1 py-1 ml-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            defaultValue={ssrSearchParam}
-            onChange={(e) => {
-              debouncedSearch(e.target.value.trim());
-            }}
-          />
-        </div>
-      </div>
-      <div className="flex flex-row flex-wrap justify-center min-[300px]:justify-around items-center mt-2 my-4">
+    <div className="pb-24">
+      <div className="flex flex-wrap items-center gap-2 px-6 py-4">
         <Link
           href={`${Pages.SEARCH}${
             ssrSearchParam ? `?search=${ssrSearchParam}` : ""
           }`}
         >
-          <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full">
+          <button className="rounded-full px-4 py-1.5 text-sm font-medium bg-[#232323] text-white hover:bg-[#2a2a2a]">
             All
           </button>
         </Link>
-        {filters.map((filter) => (
-          <Link
-            key={filter}
-            href={{
-              pathname: `${Pages.SEARCH}/${filter}`,
-              query: {
-                search: ssrSearchParam,
-                page: 1,
-              },
-            }}
-          >
-            <button
-              className={`${
-                router.query.types !== filter ? "bg-green-500" : "bg-green-700"
-              } hover:bg-green-700 first-letter:uppercase text-white font-bold py-2 px-4 rounded-full`}
+        {filters.map((filter) => {
+          const active = router.query.types === filter.type;
+          return (
+            <Link
+              key={filter.type}
+              href={{
+                pathname: `${Pages.SEARCH}/${filter.type}`,
+                query: {
+                  search: ssrSearchParam,
+                  page: 1,
+                },
+              }}
             >
-              {filter}
-            </button>
-          </Link>
-        ))}
+              <button
+                className={`rounded-full px-4 py-1.5 text-sm font-medium ${
+                  active
+                    ? "bg-white text-black"
+                    : "bg-[#232323] text-white hover:bg-[#2a2a2a]"
+                }`}
+              >
+                {filter.label}
+              </button>
+            </Link>
+          );
+        })}
       </div>
       <div>
         {emtpySearch && (
@@ -156,7 +141,7 @@ export default function Search({
                   }
                   title={item.name}
                   description={item.artists[0].name}
-                  link={`${Pages.TRACKS}/${item.id} `}
+                  link={`${Pages.TRACKS}/${item.id}`}
                 />
               );
             })}
@@ -192,7 +177,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  if (!filters.includes(types as string)) {
+  if (!filters.some((filter) => filter.type === types)) {
     return {
       redirect: {
         destination: "/search",
