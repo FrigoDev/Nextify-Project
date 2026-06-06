@@ -22,7 +22,7 @@ const Login = ({ providers }: LoginProps) => {
           priority
           width={200}
           height={200}
-          src="/assets/images/spotifyLogo.png"
+          src="/assets/images/SpotifyLogo.png"
           alt="Spotify logo"
         />
       </div>
