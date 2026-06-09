@@ -5,7 +5,10 @@ export const config = {
 };
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.SECRET });
+  const token = await getToken({
+    req,
+    secret: process.env.SECRET || process.env.NEXTAUTH_SECRET,
+  });
 
   const { pathname } = req.nextUrl;
   if (
@@ -14,7 +17,7 @@ export async function middleware(req: NextRequest) {
     token?.accessTokenExpires &&
     token.accessTokenExpires > Date.now()
   ) {
-    return NextResponse.redirect(`${process.env.SPOTIFY_REDIRECT_URI}/`);
+    return NextResponse.redirect(new URL("/", req.url));
   }
   if (
     pathname.match(/\/api\/auth\//) ||
@@ -27,6 +30,6 @@ export async function middleware(req: NextRequest) {
     (!token ||
       (token?.accessTokenExpires && token.accessTokenExpires < Date.now()))
   ) {
-    return NextResponse.redirect(`${process.env.SPOTIFY_REDIRECT_URI}/login`);
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 }
