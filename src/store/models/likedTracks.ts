@@ -49,7 +49,11 @@ export const likedTracks = createModel<RootModel>()({
       } else {
         dispatch.likedTracks.addSomeLikedTracks(LikedTracks);
       }
-      if (body.next) {
+      // Cap the recursive fetch: the heart icon only needs to know whether a
+      // small set of IDs is liked, so loading thousands of saved tracks on
+      // every page load wastes bandwidth and slows the sidebar.
+      const MAX_OFFSET = 200;
+      if (body.next && (offset ?? 0) < MAX_OFFSET) {
         const next = body.next.split("offset=")[1];
         await dispatch.likedTracks.fetchLikedTracks({
           access_token,

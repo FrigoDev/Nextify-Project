@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FaPause,
   FaPlay,
@@ -27,9 +27,14 @@ const formatTime = (ms: number) =>
 export default function NowPlaying() {
   const dispatch = useDispatch<Dispatch>();
   const { data: session } = useSession();
+  const deviceId = useSelector((state: RootState) => state.playingSong.deviceId);
+  const shuffle = useSelector((state: RootState) => state.playingSong.shuffle);
+  const isPlaying = useSelector((state: RootState) => state.playingSong.isPlaying);
+  const duration = useSelector((state: RootState) => state.playingSong.duration);
+  const volume = useSelector((state: RootState) => state.playingSong.volume);
   const nowPlaying = useSelector((state: RootState) => state.playingSong);
-  const { isPlaying, position, duration, volume, shuffle, deviceId } =
-    nowPlaying;
+
+  const [localPosition, setLocalPosition] = useState(0);
 
   const playerRef = useRef<Spotify.Player | null>(null);
   const tokenRef = useRef<string>("");
@@ -39,6 +44,11 @@ export default function NowPlaying() {
   useEffect(() => {
     tokenRef.current = session?.accessToken ?? "";
   }, [session?.accessToken]);
+
+  // Sync local progress when the Redux position changes (e.g. SDK events).
+  useEffect(() => {
+    setLocalPosition(nowPlaying.position);
+  }, [nowPlaying.position]);
 
   const initPlayer = useCallback(() => {
     if (playerRef.current || !window.Spotify) return;
@@ -106,15 +116,19 @@ export default function NowPlaying() {
     };
   }, []);
 
-  // Poll playback position while a track is playing.
+  // Drive the progress bar from a local interval + the last Redux position.
+  // Polling `player.getCurrentState()` would cause a Redux dispatch every
+  // second, which re-renders every component subscribed to `playingSong`.
   useEffect(() => {
     if (!isPlaying) return;
-    const id = setInterval(async () => {
-      const state = await playerRef.current?.getCurrentState();
-      if (state) dispatch.playingSong.setPosition(state.position);
+    const id = setInterval(() => {
+      setLocalPosition((prev) => {
+        const next = prev + 1000;
+        return next >= duration ? duration : next;
+      });
     }, 1000);
     return () => clearInterval(id);
-  }, [isPlaying, dispatch]);
+  }, [isPlaying, duration]);
 
   const togglePlay = () => {
     playerRef.current?.activateElement?.();
@@ -122,7 +136,7 @@ export default function NowPlaying() {
   };
 
   const onSeek = (ms: number) => {
-    dispatch.playingSong.setPosition(ms);
+    setLocalPosition(ms);
     playerRef.current?.seek(ms);
   };
 
@@ -138,7 +152,7 @@ export default function NowPlaying() {
 
   const fill = (pct: number) =>
     `linear-gradient(to right, #1db954 ${pct}%, #4d4d4d ${pct}%)`;
-  const progressPct = duration ? (position / duration) * 100 : 0;
+  const progressPct = duration ? (localPosition / duration) * 100 : 0;
 
   const toggleShuffle = async () => {
     if (!session?.accessToken || !deviceId) return;
@@ -153,7 +167,6 @@ export default function NowPlaying() {
 
   const hasTrack = Boolean(nowPlaying.id);
 
-  // The bar stays mounted; only the track info appears once something plays.
   return (
     <>
       <Script
@@ -173,6 +186,7 @@ export default function NowPlaying() {
                   }
                   width={56}
                   height={56}
+                  sizes="56px"
                   alt={nowPlaying.name}
                 />
                 <div className="flex flex-col mx-3 my-auto min-w-0">
@@ -229,7 +243,7 @@ export default function NowPlaying() {
             </div>
             <div className="flex flex-row items-center gap-2 w-full max-[450px]:hidden">
               <span className="text-[11px] text-gray-400 tabular-nums">
-                {formatTime(position)}
+                {formatTime(localPosition)}
               </span>
               <input
                 type="range"
@@ -237,7 +251,7 @@ export default function NowPlaying() {
                 min={0}
                 max={duration || 0}
                 step={1000}
-                value={position}
+                value={localPosition}
                 className="player-range flex-1"
                 style={{ background: fill(progressPct) }}
                 onChange={(e) => onSeek(parseFloat(e.target.value))}
