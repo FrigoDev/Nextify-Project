@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface DropdownOption {
   value: string;
@@ -26,24 +26,28 @@ const Dropdown = ({
     onSelect(option);
   };
 
-  const handleOutsideClick = (target: Node) => {
-    if (
-      dropdownRef.current &&
-      !dropdownRef.current.contains(target) &&
-      isOpen
-    ) {
-      onClose();
-    }
-  };
-  addEventListener("click", (e) => {
-    handleOutsideClick(e.target as Node);
-  });
+  useEffect(() => {
+    if (!isOpen) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node) &&
+        isOpen
+      ) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, [isOpen, onClose]);
 
   return (
     <div
       ref={dropdownRef}
       onClick={(e) => {
-        handleOutsideClick(e.target as Node);
+        if (isOpen && !dropdownRef.current?.contains(e.target as Node)) {
+          onClose();
+        }
       }}
     >
       <div>
