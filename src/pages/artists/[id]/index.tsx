@@ -5,7 +5,7 @@ import { getToken } from "next-auth/jwt";
 import Card from "@/components/Card";
 import Header from "@/components/Header";
 import SectionDivider from "@/components/SectionDivider";
-import { Pages } from "@/constants";
+import { Assets, Pages } from "@/constants";
 import spotifyApi from "@/lib/spotifyWebApi";
 
 interface ArtistPageProps {
@@ -23,6 +23,7 @@ export default function ArtistPage({ artist, albums }: ArtistPageProps) {
               src={artist.images[0].url}
               width={200}
               height={200}
+              sizes="200px"
               alt="Artist Image"
               className="rounded-full mb-2"
             />
@@ -35,7 +36,7 @@ export default function ArtistPage({ artist, albums }: ArtistPageProps) {
           <Card
             key={album.id}
             title={album.name}
-            image={album?.images[0]?.url ?? "https://via.placeholder.com/300"}
+            image={album?.images[0]?.url ?? Assets.DEFAULT_IMAGE}
             link={`${Pages.ALBUM}/${album.id}`}
             description=""
             contextUri={album.uri}

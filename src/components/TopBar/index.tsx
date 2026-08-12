@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FaChevronDown, FaHome, FaSearch } from "react-icons/fa";
 
 import Dropdown from "@/components/Dropdown";
-import { Pages } from "@/constants";
+import { Assets, Pages } from "@/constants";
 import spotifyApi from "@/lib/spotifyWebApi";
 
 const SEARCH_TYPES = ["artist", "track", "album"] as const;
@@ -163,10 +163,11 @@ const TopBar = () => {
                     className="flex items-center gap-3 rounded-md p-2 hover:bg-white/10"
                   >
                     <Image
-                      src={s.image ?? "/assets/images/SpotifyDefaultImage.jpg"}
+                      src={s.image ?? Assets.DEFAULT_IMAGE}
                       alt={s.name}
                       width={40}
                       height={40}
+                      sizes="40px"
                       className={`h-10 w-10 object-cover ${
                         s.type === "artist" ? "rounded-full" : "rounded"
                       }`}

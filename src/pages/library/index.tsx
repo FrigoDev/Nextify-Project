@@ -6,7 +6,7 @@ import useSWR, { SWRConfig } from "swr";
 
 import Card from "@/components/Card";
 import Header from "@/components/Header";
-import { Pages } from "@/constants";
+import { Assets, Pages } from "@/constants";
 import spotifyApi from "@/lib/spotifyWebApi";
 interface LibraryProps {
   likedTracks: SpotifyApi.UsersSavedTracksResponse;
@@ -34,10 +34,11 @@ const LibrarContent = () => {
       <Header>
         <div className="flex flex-row">
           <Image
-            src={session?.user?.image ?? "https://via.placeholder.com/300"}
+            src={session?.user?.image ?? Assets.DEFAULT_IMAGE}
             alt="User Image"
             width={200}
             height={200}
+            sizes="(max-width: 400px) 96px, (max-width: 640px) 128px, 200px"
             className="rounded-lg mr-6 max-[400px]:w-24 max-[400px]:h-24 sm:w-[200px] sm:h-[200px] w-32 h-32"
           />
           <div className="flex flex-col justify-center mt-auto gap-1 sm:gap-4">

@@ -8,7 +8,7 @@ import { SiLibrariesdotio } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
 import useSWR from "swr";
 
-import { Pages } from "@/constants/index";
+import { Assets, Pages } from "@/constants/index";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import spotifyApi from "@/lib/spotifyWebApi";
 import { RootStates } from "@/store/models";
@@ -17,8 +17,6 @@ import { Dispatch } from "@/store/store";
 const MIN_WIDTH = 180;
 const MAX_WIDTH = 420;
 const DEFAULT_WIDTH = 280;
-
-const DEFAULT_IMAGE = "/assets/images/SpotifyDefaultImage.jpg";
 
 type ChipType = "playlist" | "album" | "artist";
 
@@ -238,10 +236,11 @@ const Sidebar = () => {
               }`}
             >
               <Image
-                src={item.image ?? DEFAULT_IMAGE}
+                src={item.image ?? Assets.DEFAULT_IMAGE}
                 alt={item.name}
                 width={48}
                 height={48}
+                sizes="48px"
                 className={`h-12 w-12 object-cover shrink-0 ${
                   item.type === "artist" ? "rounded-full" : "rounded-sm"
                 }`}

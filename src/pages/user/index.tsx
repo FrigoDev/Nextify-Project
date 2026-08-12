@@ -6,7 +6,7 @@ import SpotifyWebApi from "spotify-web-api-node";
 
 import Card from "@/components/Card";
 import Header from "@/components/Header";
-import { Pages } from "@/constants";
+import { Assets, Pages } from "@/constants";
 
 interface UserInfoProps {
   user: SpotifyApi.UserObjectPrivate;
@@ -27,9 +27,10 @@ export default function UserInfo({
         <div className="flex flex-col items-center justify-center">
           <Image
             alt="user"
-            src={user?.images?.at(0)?.url ?? "https://via.placeholder.com/300"}
+            src={user?.images?.at(0)?.url ?? Assets.DEFAULT_IMAGE}
             width={200}
             height={200}
+            sizes="200px"
             className="rounded-full"
           />
           <h3 className="text-2xl font-bold my-2 text-white">
@@ -45,8 +46,7 @@ export default function UserInfo({
             {topArtists.map((artist) => (
               <Card
                 image={
-                  artist?.images?.at(0)?.url ??
-                  "https://via.placeholder.com/300"
+                  artist?.images?.at(0)?.url ?? Assets.DEFAULT_IMAGE
                 }
                 description=""
                 link={`${Pages.ARTIST}/${artist.id}`}
@@ -63,8 +63,7 @@ export default function UserInfo({
           {topTracks.map((track) => (
             <Card
               image={
-                track?.album?.images?.at(0)?.url ??
-                "https://via.placeholder.com/300"
+                track?.album?.images?.at(0)?.url ?? Assets.DEFAULT_IMAGE
               }
               description=""
               link={`${Pages.TRACKS}/${track.id}`}
@@ -93,7 +92,7 @@ export default function UserInfo({
           {followedArtists.map((artist) => (
             <Card
               image={
-                artist?.images?.at(0)?.url ?? "https://via.placeholder.com/300"
+                artist?.images?.at(0)?.url ?? Assets.DEFAULT_IMAGE
               }
               description=""
               link={`${Pages.ARTIST}/${artist.id}`}

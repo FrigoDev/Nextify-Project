@@ -3,7 +3,7 @@ import Link from "next/link";
 import { JWT, getToken } from "next-auth/jwt";
 
 import Card from "@/components/Card";
-import { Pages } from "@/constants";
+import { Assets, Pages } from "@/constants";
 import { getEmtpySearch, spotifySearch } from "@/utils/search";
 
 const filters = [
@@ -68,8 +68,7 @@ export default function Search({
                 <Card
                   key={item.id}
                   image={
-                    item?.images ??
-                    "https://upload.wikimedia.org/wikipedia/commons/c/cb/Square_gray.svg"
+                    item?.images ?? Assets.DEFAULT_IMAGE
                   }
                   title={item.name}
                   description={item.owner ?? ""}
@@ -87,8 +86,7 @@ export default function Search({
                 <Card
                   key={item.id}
                   image={
-                    item?.images[0]?.url ??
-                    "https://upload.wikimedia.org/wikipedia/commons/c/cb/Square_gray.svg"
+                    item?.images[0]?.url ?? Assets.DEFAULT_IMAGE
                   }
                   title={item.name}
                   description={item.genres?.slice(0, 3).join(", ") ?? ""}
@@ -106,8 +104,7 @@ export default function Search({
                 <Card
                   key={item.id}
                   image={
-                    item?.images[0]?.url ??
-                    "https://upload.wikimedia.org/wikipedia/commons/c/cb/Square_gray.svg"
+                    item?.images[0]?.url ?? Assets.DEFAULT_IMAGE
                   }
                   title={item.name}
                   description={
@@ -130,8 +127,7 @@ export default function Search({
                 <Card
                   key={item.id}
                   image={
-                    item?.album?.images[0]?.url ??
-                    "https://upload.wikimedia.org/wikipedia/commons/c/cb/Square_gray.svg"
+                    item?.album?.images[0]?.url ?? Assets.DEFAULT_IMAGE
                   }
                   title={item.name}
                   description={

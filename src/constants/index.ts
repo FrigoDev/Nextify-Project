@@ -11,5 +11,5 @@ export enum Pages {
 
 export enum Assets {
   LOGO = "/assets/images/SpotifyLogo.png",
-  DEFAULT_IMAGE = "/assets/images/SpotifyDefaultImage.png",
+  DEFAULT_IMAGE = "/assets/images/SpotifyDefaultImage.jpg",
 }

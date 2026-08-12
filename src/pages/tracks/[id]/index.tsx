@@ -9,12 +9,10 @@ import { useDispatch, useSelector } from "react-redux";
 
 import Hero from "@/components/Hero";
 import LikedTracks from "@/components/likeButtons/likedTracks";
-import { Pages } from "@/constants";
+import { Assets, Pages } from "@/constants";
 import { activatePlayer } from "@/lib/spotifyPlayerInstance";
 import spotifyApi from "@/lib/spotifyWebApi";
 import { Dispatch, RootState } from "@/store/store";
-
-const PLACEHOLDER = "https://via.placeholder.com/300";
 
 export default function TrackPage({
   track,
@@ -90,10 +88,11 @@ export default function TrackPage({
           className="inline-flex items-center gap-4 rounded-lg bg-white/5 p-4 transition hover:bg-white/10"
         >
           <Image
-            src={track.album.images[0]?.url ?? PLACEHOLDER}
+            src={track.album.images[0]?.url ?? Assets.DEFAULT_IMAGE}
             alt={track.album.name}
             width={80}
             height={80}
+            sizes="80px"
             className="rounded"
           />
           <div>

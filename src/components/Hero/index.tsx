@@ -2,8 +2,7 @@ import Image from "next/image";
 import { Fragment } from "react";
 
 import Header from "@/components/Header";
-
-const PLACEHOLDER = "https://via.placeholder.com/300";
+import { Assets } from "@/constants";
 
 interface HeroProps {
   image?: string;
@@ -26,10 +25,11 @@ export default function Hero({
     <Header>
       <div className="flex flex-row items-end gap-6 max-[450px]:gap-4">
         <Image
-          src={image || PLACEHOLDER}
+          src={image || Assets.DEFAULT_IMAGE}
           alt={title}
           width={232}
           height={232}
+          sizes="(max-width: 400px) 96px, (max-width: 640px) 128px, 200px"
           className="rounded-lg shadow-2xl max-[400px]:w-24 max-[400px]:h-24 sm:w-[200px] sm:h-[200px] w-32 h-32"
         />
         <div className="flex flex-col justify-end gap-3 min-w-0 pb-1">
