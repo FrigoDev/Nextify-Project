@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useCallback } from "react";
 import { FaPlay } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -12,7 +13,6 @@ interface CardProps {
   title: string;
   description: string;
   link: string;
-  // When set (an album/playlist URI), a play button appears on hover.
   contextUri?: string;
 }
 
@@ -21,22 +21,32 @@ const Card = ({ image, title, description, link, contextUri }: CardProps) => {
   const { data: session } = useSession();
   const deviceId = useSelector((state: RootState) => state.playingSong.deviceId);
 
-  const play = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    activatePlayer();
-    if (!contextUri || !deviceId || !session?.accessToken) return;
-    dispatch.playingSong.playContext({
-      access_token: session.accessToken,
-      deviceId,
-      contextUri,
-    });
-  };
+  const play = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      activatePlayer();
+      if (!contextUri || !deviceId || !session?.accessToken) return;
+      dispatch.playingSong.playContext({
+        access_token: session.accessToken,
+        deviceId,
+        contextUri,
+      });
+    },
+    [contextUri, deviceId, session?.accessToken, dispatch]
+  );
 
   return (
     <div className="group flex flex-col relative flex-shrink-0 p-4 cursor-pointer transition duration-500 ease-in-out bg-white bg-opacity-[.03] hover:bg-opacity-10 rounded-lg">
       <div className="relative mb-4">
-        <Image className="shadow-xl" src={image} width={150} height={150} alt={title} />
+        <Image
+          className="shadow-xl"
+          src={image}
+          width={150}
+          height={150}
+          sizes="(max-width: 768px) 50vw, 152px"
+          alt={title}
+        />
         {contextUri && deviceId && (
           <button
             onClick={play}

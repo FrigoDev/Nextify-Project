@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Pages } from "@/constants";
@@ -15,20 +16,51 @@ const formatAdded = (iso: string) =>
     day: "numeric",
   });
 
-const Song = ({
-  track,
-  order,
-  contextUri,
-  addedAt,
-}: {
+interface TrackInfoProps {
+  track: SpotifyApi.TrackObjectFull;
+  isCurrent: boolean;
+}
+
+const TrackInfo = ({ track, isCurrent }: TrackInfoProps) => (
+  <div className="flex flex-row min-w-0">
+    <Image
+      className="mr-2"
+      src={track.album.images[0].url}
+      height={50}
+      width={50}
+      sizes="50px"
+      alt={track.album.name}
+    />
+    <div className="min-w-0">
+      <Link
+        className="hover:underline line-clamp-1"
+        href={`${Pages.TRACKS}/${track.id}`}
+      >
+        <p className={isCurrent ? "text-green-500" : ""}>{track.name}</p>
+      </Link>
+      <p className="text-gray-400 text-sm line-clamp-1">
+        {track.artists.map((artist) => (
+          <Link
+            className="hover:underline hover:text-white"
+            href={`${Pages.ARTIST}/${artist.id}`}
+            key={artist.id}
+          >
+            {`${artist.name} `}
+          </Link>
+        ))}
+      </p>
+    </div>
+  </div>
+);
+
+interface SongProps {
   track: SpotifyApi.TrackObjectFull;
   order?: number;
-  // When provided, clicking the track plays it within the album/playlist
-  // context (so prev/next work); otherwise it plays the single track.
   contextUri?: string;
-  // ISO date the track was added to the playlist (shown as a column).
   addedAt?: string;
-}) => {
+}
+
+const Song = ({ track, order, contextUri, addedAt }: SongProps) => {
   const dispatch = useDispatch<Dispatch>();
   const { data: session } = useSession();
   const deviceId = useSelector((state: RootState) => state.playingSong.deviceId);
@@ -37,7 +69,7 @@ const Song = ({
 
   const isCurrent = currentId !== "" && currentId === track.id;
 
-  const playTrack = () => {
+  const playTrack = useCallback(() => {
     activatePlayer();
     if (!deviceId || !session?.accessToken) return;
     if (contextUri) {
@@ -54,38 +86,7 @@ const Song = ({
         track,
       });
     }
-  };
-
-  const TrackInfo = () => (
-    <div className="flex flex-row min-w-0">
-      <Image
-        className="mr-2"
-        src={track.album.images[0].url}
-        height={50}
-        width={50}
-        alt={track.album.name}
-      />
-      <div className="min-w-0">
-        <Link
-          className="hover:underline line-clamp-1"
-          href={`${Pages.TRACKS}/${track.id}`}
-        >
-          <p className={isCurrent ? "text-green-500" : ""}>{track.name}</p>
-        </Link>
-        <p className="text-gray-400 text-sm line-clamp-1">
-          {track.artists.map((artist) => (
-            <Link
-              className="hover:underline hover:text-white"
-              href={`${Pages.ARTIST}/${artist.id}`}
-              key={artist.id}
-            >
-              {`${artist.name} `}
-            </Link>
-          ))}
-        </p>
-      </div>
-    </div>
-  );
+  }, [dispatch, deviceId, session?.accessToken, contextUri, track]);
 
   return (
     <>
@@ -94,7 +95,7 @@ const Song = ({
           onDoubleClick={playTrack}
           className="-mx-2 px-2 py-1 rounded-md cursor-pointer select-none transition-colors hover:bg-white/10"
         >
-          <TrackInfo />
+          <TrackInfo track={track} isCurrent={isCurrent} />
         </div>
       ) : (
         <div
@@ -106,7 +107,7 @@ const Song = ({
           <p className={`text-sm ${isCurrent ? "text-green-500" : ""}`}>
             {order ?? track.track_number}
           </p>
-          <TrackInfo />
+          <TrackInfo track={track} isCurrent={isCurrent} />
           <Link href={`${Pages.ALBUM}/${track.album.id}?page=1`}>
             <p className="hidden text-sm md:inline hover:underline">
               {track.album.name}
@@ -125,4 +126,5 @@ const Song = ({
     </>
   );
 };
+
 export default Song;

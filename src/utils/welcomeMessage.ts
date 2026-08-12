@@ -4,8 +4,8 @@ type Greeting =
   | "Good evening"
   | "Good night";
 
-function getGreeting(): Greeting {
-  const hour = new Date().getHours();
+function getGreeting(now: Date = new Date()): Greeting {
+  const hour = now.getHours();
   const greetingsMap: [number, Greeting][] = [
     [12, "Good morning"],
     [18, "Good afternoon"],
@@ -18,9 +18,8 @@ function getGreeting(): Greeting {
   return greeting;
 }
 
-function welcomeMessage() {
-  const greeting = getGreeting();
-  return greeting;
+function welcomeMessage(now?: Date) {
+  return getGreeting(now);
 }
 
 export default welcomeMessage;
