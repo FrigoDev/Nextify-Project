@@ -7,6 +7,7 @@ vi.mock("next/router", () => {
     ...actual,
     useRouter: () => ({
       push: vi.fn(),
+      pathname: "/",
     }),
   };
 });

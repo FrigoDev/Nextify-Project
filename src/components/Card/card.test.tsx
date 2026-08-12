@@ -14,7 +14,7 @@ it("test_render_card_with_valid_props", () => {
   render(
     <Provider store={store}>
       <Card
-        image="https://via.placeholder.com/300"
+        image="/assets/images/SpotifyDefaultImage.jpg"
         title="Test Title"
         description="Test Description"
         link="/test"
