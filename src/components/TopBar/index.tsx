@@ -1,4 +1,4 @@
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";

@@ -1,5 +1,6 @@
-import { shuffle } from "lodash";
-import { useState, useEffect } from "react";
+import shuffle from "lodash/shuffle";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
 const colors = [
   "from-indigo-500",
@@ -12,11 +13,17 @@ const colors = [
 ];
 
 const Header = ({ children }: { children: React.ReactNode }) => {
+  const router = useRouter();
   const [color, setColor] = useState<string>();
 
   useEffect(() => {
-    setColor(shuffle(colors).at(0));
-  }, []);
+    // Pick a deterministic color per pathname so SSR and client agree.
+    const sum = router.pathname
+      .split("")
+      .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    const idx = sum % colors.length;
+    setColor(shuffle(colors).at(idx % colors.length));
+  }, [router.pathname]);
 
   return (
     <header>
