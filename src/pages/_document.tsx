@@ -15,6 +15,22 @@ export default function Document() {
           content="NextJS, TypeScript, React, Spotify, TailwindCSS"
         />
         <link rel="icon" href="/SpotifyIcon.ico" />
+        <link
+          rel="preconnect"
+          href="https://i.scdn.co"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href="https://mosaic.scdn.co"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href="https://sdk.scdn.co"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://api.spotify.com" />
       </Head>
       <body>
         <Main />

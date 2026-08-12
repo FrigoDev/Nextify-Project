@@ -1,13 +1,17 @@
 import { GetServerSideProps } from "next";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { getToken } from "next-auth/jwt";
 
 import Card from "@/components/Card";
 import Header from "@/components/Header";
-import Pagination from "@/components/Pagination";
 import { Pages } from "@/constants";
 import spotifyApi from "@/lib/spotifyWebApi";
 import controlData from "@/utils/getData";
+
+const Pagination = dynamic(() => import("@/components/Pagination"), {
+  ssr: false,
+});
 
 interface AlbumPageProps {
   artist: SpotifyApi.AlbumObjectFull;

@@ -7,15 +7,10 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import SectionDivider from "@/components/SectionDivider";
 import { Pages, Assets } from "@/constants/index";
-import spotifyApi from "@/lib/spotifyWebApi";
+import cachedHomeData, { HomeData } from "@/utils/fetchHomeData";
 import welcomeMessage from "@/utils/welcomeMessage";
 
-interface indexProps {
-  topTracks: SpotifyApi.PagingObject<SpotifyApi.TrackObjectFull>;
-  topArtists: SpotifyApi.PagingObject<SpotifyApi.ArtistObjectFull>;
-  playlists: SpotifyApi.PagingObject<SpotifyApi.PlaylistObjectSimplified>;
-  savedAlbums: SpotifyApi.PagingObject<SpotifyApi.SavedAlbumObject>;
-}
+type indexProps = HomeData;
 
 const Index = ({ topTracks, topArtists, playlists, savedAlbums }: indexProps) => {
   return (
@@ -95,22 +90,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     };
   }
 
-  spotifyApi.setAccessToken(token.accessToken);
-
-  const [topTracks, topArtists, playlists, savedAlbums] = await Promise.all([
-    spotifyApi.getMyTopTracks({ limit: 6, time_range: "short_term" }),
-    spotifyApi.getMyTopArtists({ limit: 10 }),
-    spotifyApi.getUserPlaylists({ limit: 10 }),
-    spotifyApi.getMySavedAlbums({ limit: 10 }),
-  ]);
-  return {
-    props: {
-      topTracks: topTracks.body,
-      topArtists: topArtists.body,
-      playlists: playlists.body,
-      savedAlbums: savedAlbums.body,
-    },
-  };
+  const data = await cachedHomeData(token);
+  return { props: data };
 };
 
 export default Index;

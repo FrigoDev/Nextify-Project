@@ -1,17 +1,21 @@
 import { GetServerSideProps } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { getToken } from "next-auth/jwt";
 
 import Card from "@/components/Card";
-import Pagination from "@/components/Pagination";
-import { Pages } from "@/constants";
+import { Assets, Pages } from "@/constants";
 import {
   getEmtpySearch,
   isAlbums,
   isArtists,
   spotifySearch,
 } from "@/utils/search";
+
+const Pagination = dynamic(() => import("@/components/Pagination"), {
+  ssr: false,
+});
 
 const filters = [
   { label: "Songs", type: "track" },
@@ -123,8 +127,7 @@ export default function Search({
                   <Card
                     key={item.id}
                     image={
-                      item?.images[0]?.url ??
-                      "https://upload.wikimedia.org/wikipedia/commons/c/cb/Square_gray.svg"
+                      item?.images[0]?.url ?? Assets.DEFAULT_IMAGE
                     }
                     title={item.name}
                     description={item.genres[0]}
@@ -136,8 +139,7 @@ export default function Search({
                 <Card
                   key={item.id}
                   image={
-                    item?.album?.images[0]?.url ??
-                    "https://upload.wikimedia.org/wikipedia/commons/c/cb/Square_gray.svg"
+                    item?.album?.images[0]?.url ?? Assets.DEFAULT_IMAGE
                   }
                   title={item.name}
                   description={item.artists[0].name}
